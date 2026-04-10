@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmed - WatchStore</title>
+    <link rel="stylesheet" th:href="@{/css/shop.css}">
+    <style>
+        .success-section { padding: 80px 0; text-align: center; }
+        .success-box { max-width: 500px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.1); padding: 50px 40px; }
+        .success-icon { font-size: 70px; margin-bottom: 20px; animation: bounce 0.6s ease; }
+        @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+        .success-title { font-size: 26px; font-weight: 800; color: #1a1a2e; margin-bottom: 10px; }
+        .success-msg { color: #666; font-size: 15px; line-height: 1.7; margin-bottom: 24px; }
+        .order-id-badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+        .payment-badge { display: inline-block; background: #fff3e0; color: #e65100; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .btn-continue { display: inline-block; background: linear-gradient(135deg, #1a1a2e, #e94560); color: white; padding: 13px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; margin: 6px; }
+        .btn-orders { display: inline-block; background: #f5f5f5; color: #333; padding: 13px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; margin: 6px; }
+        .btn-orders:hover { background: #1a1a2e; color: white; }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="logo">⌚ WatchStore</a>
+            <nav class="nav">
+                <a href="/shop" class="nav-link">Shop</a>
+                <span th:if="${session.loggedUser != null}">
+                    <a href="/my-orders" class="nav-link">My Orders</a>
+                    <span style="color:#888;font-size:14px;" th:text="'Hi, ' + ${session.userName}">Hi</span>
+                    <a href="/auth/logout" class="nav-link" style="color:#e94560;">Logout</a>
+                </span>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<section class="success-section">
+    <div class="container">
+        <div class="success-box">
+            <div class="success-icon">🎉</div>
+            <h2 class="success-title">Order Placed Successfully!</h2>
+            <div class="order-id-badge" th:if="${orderId != null}" th:text="'Order #' + ${orderId}">Order #0</div>
+            <br>
+            <div class="payment-badge" th:if="${paymentMethod != null}">
+                💳 Payment: <span th:text="${paymentMethod}">METHOD</span>
+            </div>
+            <p class="success-msg">
+                Your order has been confirmed! 🎊<br>
+                Your watch will be delivered soon.<br>
+                <span th:if="${paymentMethod == 'CASH'}">💵 Please pay in cash at the time of delivery.</span>
+                <span th:if="${paymentMethod != 'CASH' and paymentMethod != null}">✅ Payment has been confirmed!</span>
+            </p>
+            <a href="/my-orders" class="btn-orders">📦 Track My Orders</a>
+            <a href="/shop" class="btn-continue">🛍 Continue Shopping →</a>
+        </div>
+    </div>
+</section>
+
+<footer class="footer"><p>© 2025 WatchStore India. All rights reserved.</p></footer>
+</body>
+</html>

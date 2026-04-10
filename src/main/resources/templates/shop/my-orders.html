@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Orders - WatchStore</title>
+    <link rel="stylesheet" th:href="@{/css/shop.css}">
+    <style>
+        .orders-section { padding: 40px 0; min-height: 70vh; }
+        .page-title { font-size: 28px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+        .page-subtitle { color: #888; font-size: 14px; margin-bottom: 30px; }
+        .order-card { background: #fff; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 20px; overflow: hidden; border: 1.5px solid #f0f0f0; transition: box-shadow 0.2s; }
+        .order-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: #fafafa; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 10px; }
+        .order-id { font-weight: 800; font-size: 16px; color: #1a1a2e; }
+        .order-date { font-size: 13px; color: #888; }
+        .order-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-PENDING { background: #fff3cd; color: #856404; }
+        .badge-CONFIRMED { background: #cce5ff; color: #004085; }
+        .badge-PROCESSING { background: #e2e3ff; color: #3a3aa5; }
+        .badge-SHIPPED { background: #d4edff; color: #0056b3; }
+        .badge-DELIVERED { background: #d4edda; color: #155724; }
+        .badge-CANCELLED { background: #f8d7da; color: #721c24; }
+        .badge-PAID { background: #d4edda; color: #155724; }
+        .badge-FAILED { background: #f8d7da; color: #721c24; }
+        .badge-REFUNDED { background: #fff3cd; color: #856404; }
+        .order-body { padding: 18px 24px; }
+        .order-items-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        .order-item-row { display: flex; align-items: center; gap: 14px; padding: 12px; background: #f9f9f9; border-radius: 10px; }
+        .order-item-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+        .order-item-details { flex: 1; }
+        .order-item-name { font-weight: 700; font-size: 14px; color: #1a1a2e; }
+        .order-item-meta { font-size: 12px; color: #888; margin-top: 3px; }
+        .order-item-subtotal { font-weight: 800; font-size: 14px; color: #e94560; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; background: #fafafa; border-top: 1px solid #f0f0f0; flex-wrap: wrap; gap: 10px; }
+        .order-total-label { font-size: 13px; color: #666; }
+        .order-total-amount { font-size: 20px; font-weight: 800; color: #1a1a2e; }
+        .order-payment-method { font-size: 12px; color: #888; }
+        .order-shipping { font-size: 13px; color: #555; padding: 0 24px 14px; }
+        .status-timeline { display: flex; align-items: center; gap: 6px; padding: 14px 24px; overflow-x: auto; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 70px; }
+        .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid #e0e0e0; background: #fff; color: #ccc; }
+        .step-dot.done { background: #1a1a2e; border-color: #1a1a2e; color: white; }
+        .step-dot.active { background: #e94560; border-color: #e94560; color: white; }
+        .step-line { flex: 1; height: 2px; background: #e0e0e0; min-width: 20px; }
+        .step-line.done { background: #1a1a2e; }
+        .step-label { font-size: 10px; color: #888; text-align: center; white-space: nowrap; }
+        .step-label.active { color: #e94560; font-weight: 700; }
+        .step-label.done { color: #1a1a2e; font-weight: 600; }
+        .empty-orders { text-align: center; padding: 80px 20px; }
+        .empty-orders .icon { font-size: 60px; margin-bottom: 16px; }
+        .btn-shop { display: inline-block; background: linear-gradient(135deg, #1a1a2e, #e94560); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="logo">⌚ WatchStore</a>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/cart" class="nav-link">🛒 Cart</a>
+                <a href="/my-orders" class="nav-link" style="color:#e94560;font-weight:700;">My Orders</a>
+                <span style="color:#888;font-size:14px;" th:text="'Hi, ' + ${userName}">Hi</span>
+                <a href="/auth/logout" class="nav-link" style="color:#e94560;">Logout</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<section class="orders-section">
+    <div class="container">
+        <h2 class="page-title">📦 My Orders</h2>
+        <p class="page-subtitle">Track all your orders and their current status</p>
+
+        <!-- Empty state -->
+        <div class="empty-orders" th:if="${#lists.isEmpty(orders)}">
+            <div class="icon">📦</div>
+            <h3 style="color:#333;font-size:20px;">No orders yet!</h3>
+            <p style="color:#888;">You haven't placed any orders. Start shopping now.</p>
+            <a href="/shop" class="btn-shop">Browse Watches →</a>
+        </div>
+
+        <!-- Orders list -->
+        <div th:each="order : ${orders}" class="order-card">
+
+            <!-- Order Header -->
+            <div class="order-header">
+                <div>
+                    <div class="order-id" th:text="'Order #' + ${order.id}">Order #0</div>
+                    <div class="order-date" th:text="'Placed on ' + ${#temporals.format(order.orderedAt, 'dd MMM yyyy, hh:mm a')}">Date</div>
+                </div>
+                <div class="order-badges">
+                    <span class="badge" th:classappend="'badge-' + ${order.orderStatus.name()}" th:text="${order.orderStatus}">STATUS</span>
+                    <span class="badge" th:classappend="'badge-' + ${order.paymentStatus.name()}" th:text="${order.paymentStatus}">PAYMENT</span>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="status-timeline">
+                <!-- Pending -->
+                <div class="step">
+                    <div class="step-dot" th:classappend="${order.orderStatus.name() == 'PENDING' ? 'active' : (order.orderStatus.ordinal() > 0 ? 'done' : '')}">📋</div>
+                    <div class="step-label" th:classappend="${order.orderStatus.name() == 'PENDING' ? 'active' : (order.orderStatus.ordinal() > 0 ? 'done' : '')}">Pending</div>
+                </div>
+                <div class="step-line" th:classappend="${order.orderStatus.ordinal() > 0 ? 'done' : ''}"></div>
+                <!-- Confirmed -->
+                <div class="step">
+                    <div class="step-dot" th:classappend="${order.orderStatus.name() == 'CONFIRMED' ? 'active' : (order.orderStatus.ordinal() > 1 ? 'done' : '')}">✅</div>
+                    <div class="step-label" th:classappend="${order.orderStatus.name() == 'CONFIRMED' ? 'active' : (order.orderStatus.ordinal() > 1 ? 'done' : '')}">Confirmed</div>
+                </div>
+                <div class="step-line" th:classappend="${order.orderStatus.ordinal() > 1 ? 'done' : ''}"></div>
+                <!-- Processing -->
+                <div class="step">
+                    <div class="step-dot" th:classappend="${order.orderStatus.name() == 'PROCESSING' ? 'active' : (order.orderStatus.ordinal() > 2 ? 'done' : '')}">⚙️</div>
+                    <div class="step-label" th:classappend="${order.orderStatus.name() == 'PROCESSING' ? 'active' : (order.orderStatus.ordinal() > 2 ? 'done' : '')}">Processing</div>
+                </div>
+                <div class="step-line" th:classappend="${order.orderStatus.ordinal() > 2 ? 'done' : ''}"></div>
+                <!-- Shipped -->
+                <div class="step">
+                    <div class="step-dot" th:classappend="${order.orderStatus.name() == 'SHIPPED' ? 'active' : (order.orderStatus.ordinal() > 3 ? 'done' : '')}">🚚</div>
+                    <div class="step-label" th:classappend="${order.orderStatus.name() == 'SHIPPED' ? 'active' : (order.orderStatus.ordinal() > 3 ? 'done' : '')}">Shipped</div>
+                </div>
+                <div class="step-line" th:classappend="${order.orderStatus.ordinal() > 3 ? 'done' : ''}"></div>
+                <!-- Delivered -->
+                <div class="step">
+                    <div class="step-dot" th:classappend="${order.orderStatus.name() == 'DELIVERED' ? 'active' : ''}">🎁</div>
+                    <div class="step-label" th:classappend="${order.orderStatus.name() == 'DELIVERED' ? 'active' : ''}">Delivered</div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="order-body">
+                <div class="order-items-list">
+                    <div th:each="item : ${order.orderItems}" class="order-item-row">
+                        <img th:src="${item.product != null and item.product.imageUrl != null ? item.product.imageUrl : 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=100'}"
+                             class="order-item-img"
+                             th:alt="${item.product != null ? item.product.name : 'Watch'}">
+                        <div class="order-item-details">
+                            <div class="order-item-name" th:text="${item.product != null ? item.product.name : 'Watch'}">Watch Name</div>
+                            <div class="order-item-meta" th:text="'Qty: ' + ${item.quantity} + ' × ₹' + ${item.price}">Qty: 1</div>
+                        </div>
+                        <div class="order-item-subtotal" th:text="'₹' + ${item.subtotal}">₹0</div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="order-shipping" th:if="${order.shippingAddress != null}">
+                    📍 <strong>Delivery to:</strong> <span th:text="${order.shippingAddress}">Address</span>
+                </div>
+            </div>
+
+            <!-- Order Footer -->
+            <div class="order-footer">
+                <div>
+                    <div class="order-payment-method" th:text="'Payment: ' + ${order.paymentMethod}">Payment: CASH</div>
+                    <div class="order-total-label">Order Total</div>
+                    <div class="order-total-amount" th:text="'₹' + ${order.totalAmount}">₹0</div>
+                </div>
+                <div th:if="${order.orderStatus.name() == 'CANCELLED'}" style="color:#dc3545;font-weight:700;font-size:14px;">❌ This order was cancelled</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer class="footer"><p>© 2025 WatchStore India. All rights reserved.</p></footer>
+</body>
+</html>

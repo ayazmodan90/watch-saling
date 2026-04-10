@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Products - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link active">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link">💳 Payments</a>
+        <a href="/admin/users" class="nav-link">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>Products Management</h1>
+        <a href="/admin/products/add" class="btn btn-primary">+ Add New Product</a>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Brand</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Seller</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="product : ${products}">
+                    <td th:text="${product.id}"></td>
+                    <td>
+                        <img th:src="${product.imageUrl != null ? product.imageUrl : '/images/watch-placeholder.png'}"
+                             width="50" height="50" style="border-radius:8px;object-fit:cover;">
+                    </td>
+                    <td th:text="${product.name}"></td>
+                    <td th:text="${product.brand}"></td>
+                    <td th:text="${product.category}"></td>
+                    <td th:text="'₹' + ${product.price}"></td>
+                    <td th:text="${product.stock}">
+                        <span th:class="${product.stock == 0 ? 'text-red' : ''}"></span>
+                    </td>
+                    <td>
+                        <span class="badge" th:classappend="${product.status.name()}"
+                              th:text="${product.status}"></span>
+                    </td>
+                    <td th:text="${product.seller != null ? product.seller.name : 'N/A'}"></td>
+                    <td>
+                        <a th:href="@{/admin/products/edit/{id}(id=${product.id})}" 
+                           class="btn btn-sm btn-info">Edit</a>
+                        
+                        <form th:action="@{/admin/products/delete/{id}(id=${product.id})}" 
+                              method="post" style="display:inline"
+                              onsubmit="return confirm('Delete this product?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="10" style="text-align:center">No products found. 
+                        <a href="/admin/products/add">Add first product</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

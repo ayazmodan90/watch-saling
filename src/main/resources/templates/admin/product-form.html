@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Form - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link active">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link">💳 Payments</a>
+        <a href="/admin/users" class="nav-link">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1 th:text="${product.id != null ? 'Edit Product' : 'Add New Product'}">Product Form</h1>
+        <a href="/admin/products" class="btn btn-secondary">← Back to Products</a>
+    </div>
+
+    <div class="card" style="max-width:700px">
+        <form th:action="${product.id != null ? '/admin/products/edit/' + product.id : '/admin/products/add'}"
+              method="post" th:object="${product}">
+            
+            <div class="form-group">
+                <label>Product Name *</label>
+                <input type="text" th:field="*{name}" class="form-control" placeholder="e.g. Classic Chronograph">
+                <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Brand *</label>
+                    <input type="text" th:field="*{brand}" class="form-control" placeholder="e.g. Rolex, Titan">
+                    <span class="error" th:if="${#fields.hasErrors('brand')}" th:errors="*{brand}"></span>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select th:field="*{category}" class="form-control">
+                        <option value="">Select Category</option>
+                        <option value="Luxury">Luxury</option>
+                        <option value="Sport">Sport</option>
+                        <option value="Casual">Casual</option>
+                        <option value="Smart">Smart Watch</option>
+                        <option value="Vintage">Vintage</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description *</label>
+                <textarea th:field="*{description}" class="form-control" rows="4" 
+                          placeholder="Describe the watch..."></textarea>
+                <span class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price (₹) *</label>
+                    <input type="number" th:field="*{price}" class="form-control" step="0.01" placeholder="0.00">
+                    <span class="error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
+                </div>
+                <div class="form-group">
+                    <label>Stock *</label>
+                    <input type="number" th:field="*{stock}" class="form-control" placeholder="0">
+                    <span class="error" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="text" th:field="*{imageUrl}" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Assign Seller</label>
+                    <select class="form-control" name="sellerId">
+                        <option value="">No Seller (Admin)</option>
+                        <option th:each="seller : ${sellers}" 
+                                th:value="${seller.id}" 
+                                th:text="${seller.name}"
+                                th:selected="${product.seller != null && product.seller.id == seller.id}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" th:if="${product.id != null}">
+                <label>Status</label>
+                <select th:field="*{status}" class="form-control">
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="OUT_OF_STOCK">Out of Stock</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span th:text="${product.id != null ? '💾 Update Product' : '➕ Add Product'}">Save</span>
+                </button>
+                <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

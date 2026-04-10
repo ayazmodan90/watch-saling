@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Shop - WatchStore</title>
+    <link rel="stylesheet" th:href="@{/css/shop.css}">
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="logo">⌚ WatchStore</a>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/cart" class="nav-link">
+                    🛒 Cart
+                    <span th:if="${cartCount > 0}" style="background:#e94560;color:white;border-radius:50%;padding:1px 6px;font-size:11px;margin-left:3px;" th:text="${cartCount}">0</span>
+                </a>
+                <span th:if="${loggedUser != null}">
+                    <a href="/my-orders" class="nav-link">My Orders</a>
+                    <span style="color:#888;font-size:14px;" th:text="'Hi, ' + ${userName}">Hi</span>
+                    <a href="/auth/logout" class="nav-link" style="color:#e94560;">Logout</a>
+                </span>
+                <span th:if="${loggedUser == null}">
+                    <a href="/auth/login" class="nav-link">Login</a>
+                </span>
+                <a th:if="${userRole == 'ADMIN'}" href="/admin/dashboard" class="nav-link btn-admin">Admin Panel</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<div class="container" style="padding-top:30px">
+    <!-- Search & Filter -->
+    <div class="shop-controls">
+        <form action="/shop" method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search watches..." class="search-input"
+                   th:value="${param.search}">
+            <button type="submit" class="btn-search">Search</button>
+        </form>
+        <div class="category-filters">
+            <a href="/shop" class="filter-btn">All</a>
+            <a href="/shop?category=Luxury" class="filter-btn">Luxury</a>
+            <a href="/shop?category=Sport" class="filter-btn">Sport</a>
+            <a href="/shop?category=Casual" class="filter-btn">Casual</a>
+            <a href="/shop?category=Smart" class="filter-btn">Smart</a>
+            <a href="/shop?category=Vintage" class="filter-btn">Vintage</a>
+        </div>
+    </div>
+
+    <div class="products-grid">
+        <div class="product-card" th:each="product : ${products}">
+            <div class="product-image">
+                <img th:src="${product.imageUrl != null ? product.imageUrl : 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=400'}"
+                     th:alt="${product.name}" style="width:100%;height:200px;object-fit:cover;">
+                <span class="product-category" th:text="${product.category}"></span>
+            </div>
+            <div class="product-info">
+                <h3 th:text="${product.name}"></h3>
+                <p class="brand" th:text="${product.brand}"></p>
+                <p class="price" th:text="'₹' + ${product.price}"></p>
+                <p th:if="${product.stock == 0}" class="out-of-stock">Out of Stock</p>
+                <div style="display:flex;gap:6px;margin-top:8px;">
+                    <a th:href="@{/shop/product/{id}(id=${product.id})}" class="btn-add" style="flex:1;text-align:center;">View Details</a>
+                    <form th:if="${product.stock > 0}" action="/cart/add" method="post" style="flex:1;">
+                        <input type="hidden" name="productId" th:value="${product.id}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn-add" style="width:100%;background:linear-gradient(135deg,#1a1a2e,#e94560);color:white;border:none;cursor:pointer;">🛒 Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center;padding:60px 0;color:#666" th:if="${#lists.isEmpty(products)}">
+        <p>No watches found matching your criteria.</p>
+        <a href="/shop" class="btn-hero">Browse All</a>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>© 2024 WatchStore. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

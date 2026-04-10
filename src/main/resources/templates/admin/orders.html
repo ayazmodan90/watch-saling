@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Orders - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link active">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link">💳 Payments</a>
+        <a href="/admin/users" class="nav-link">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>Order Management</h1>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Payment Method</th>
+                    <th>Order Status</th>
+                    <th>Payment Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${orders}">
+                    <td th:text="'#' + ${order.id}"></td>
+                    <td th:text="${order.customer != null ? order.customer.name : 'N/A'}"></td>
+                    <td th:text="'₹' + ${order.totalAmount}"></td>
+                    <td th:text="${order.paymentMethod}"></td>
+                    <td>
+                        <form th:action="@{/admin/orders/status/{id}(id=${order.id})}" method="post" style="display:inline">
+                            <select name="status" class="form-control-sm" onchange="this.form.submit()">
+                                <option value="PENDING" th:selected="${order.orderStatus.name() == 'PENDING'}">Pending</option>
+                                <option value="CONFIRMED" th:selected="${order.orderStatus.name() == 'CONFIRMED'}">Confirmed</option>
+                                <option value="PROCESSING" th:selected="${order.orderStatus.name() == 'PROCESSING'}">Processing</option>
+                                <option value="SHIPPED" th:selected="${order.orderStatus.name() == 'SHIPPED'}">Shipped</option>
+                                <option value="DELIVERED" th:selected="${order.orderStatus.name() == 'DELIVERED'}">Delivered</option>
+                                <option value="CANCELLED" th:selected="${order.orderStatus.name() == 'CANCELLED'}">Cancelled</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        <form th:action="@{/admin/orders/payment/{id}(id=${order.id})}" method="post" style="display:inline">
+                            <select name="paymentStatus" class="form-control-sm" onchange="this.form.submit()">
+                                <option value="PENDING" th:selected="${order.paymentStatus.name() == 'PENDING'}">Pending</option>
+                                <option value="PAID" th:selected="${order.paymentStatus.name() == 'PAID'}">Paid</option>
+                                <option value="FAILED" th:selected="${order.paymentStatus.name() == 'FAILED'}">Failed</option>
+                                <option value="REFUNDED" th:selected="${order.paymentStatus.name() == 'REFUNDED'}">Refunded</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td th:text="${#temporals.format(order.orderedAt, 'dd MMM yyyy')}"></td>
+                    <td>
+                        <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-info">Details</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders)}">
+                    <td colspan="8" style="text-align:center">No orders found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

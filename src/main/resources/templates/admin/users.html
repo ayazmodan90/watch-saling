@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Users - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link">💳 Payments</a>
+        <a href="/admin/users" class="nav-link active">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>User Management</h1>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div class="card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.name}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.phone}"></td>
+                    <td>
+                        <span class="badge" th:classappend="${user.role.name()}" th:text="${user.role}"></span>
+                    </td>
+                    <td>
+                        <span class="badge" th:classappend="${user.status.name()}" th:text="${user.status}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></td>
+                    <td>
+                        <!-- Change Role -->
+                        <form th:action="@{/admin/users/role/{id}(id=${user.id})}" method="post" style="display:inline">
+                            <select name="role" class="form-control-sm" onchange="this.form.submit()">
+                                <option value="CUSTOMER" th:selected="${user.role.name() == 'CUSTOMER'}">Customer</option>
+                                <option value="SELLER" th:selected="${user.role.name() == 'SELLER'}">Seller</option>
+                                <option value="ADMIN" th:selected="${user.role.name() == 'ADMIN'}">Admin</option>
+                            </select>
+                        </form>
+                        
+                        <!-- Toggle Status -->
+                        <form th:action="@{/admin/users/status/{id}(id=${user.id})}" method="post" style="display:inline">
+                            <input type="hidden" name="status" 
+                                   th:value="${user.status.name() == 'ACTIVE' ? 'BANNED' : 'ACTIVE'}">
+                            <button type="submit" class="btn btn-sm"
+                                    th:class="${user.status.name() == 'ACTIVE' ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-success'}"
+                                    th:text="${user.status.name() == 'ACTIVE' ? 'Ban' : 'Activate'}">
+                            </button>
+                        </form>
+                        
+                        <!-- Delete -->
+                        <form th:action="@{/admin/users/delete/{id}(id=${user.id})}" method="post" style="display:inline"
+                              onsubmit="return confirm('Delete user?')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Detail - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link active">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link">💳 Payments</a>
+        <a href="/admin/users" class="nav-link">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>Order #<span th:text="${order.id}"></span> Details</h1>
+        <a href="/admin/orders" class="btn btn-secondary">← Back to Orders</a>
+    </div>
+
+    <div class="order-detail-grid">
+        <!-- Order Info -->
+        <div class="card">
+            <h3>Order Information</h3>
+            <table class="info-table">
+                <tr><td>Order ID</td><td th:text="'#' + ${order.id}"></td></tr>
+                <tr><td>Order Date</td><td th:text="${#temporals.format(order.orderedAt, 'dd MMM yyyy HH:mm')}"></td></tr>
+                <tr><td>Order Status</td>
+                    <td><span class="badge" th:classappend="${order.orderStatus.name()}" th:text="${order.orderStatus}"></span></td>
+                </tr>
+                <tr><td>Payment Status</td>
+                    <td><span class="badge" th:classappend="${order.paymentStatus.name()}" th:text="${order.paymentStatus}"></span></td>
+                </tr>
+                <tr><td>Payment Method</td><td th:text="${order.paymentMethod}"></td></tr>
+                <tr><td>Transaction ID</td><td th:text="${order.transactionId != null ? order.transactionId : 'N/A'}"></td></tr>
+                <tr><td><strong>Total Amount</strong></td><td><strong th:text="'₹' + ${order.totalAmount}"></strong></td></tr>
+            </table>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="card" th:if="${order.customer != null}">
+            <h3>Customer Information</h3>
+            <table class="info-table">
+                <tr><td>Name</td><td th:text="${order.customer.name}"></td></tr>
+                <tr><td>Email</td><td th:text="${order.customer.email}"></td></tr>
+                <tr><td>Phone</td><td th:text="${order.customer.phone}"></td></tr>
+                <tr><td>Shipping Address</td><td th:text="${order.shippingAddress}"></td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="card">
+        <h3>Order Items</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>Unit Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${order.orderItems}">
+                    <td th:text="${item.product != null ? item.product.name : 'N/A'}"></td>
+                    <td th:text="${item.product != null ? item.product.brand : 'N/A'}"></td>
+                    <td th:text="'₹' + ${item.price}"></td>
+                    <td th:text="${item.quantity}"></td>
+                    <td th:text="'₹' + ${item.subtotal}"></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" style="text-align:right"><strong>Total:</strong></td>
+                    <td><strong th:text="'₹' + ${order.totalAmount}"></strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Update Status -->
+    <div class="card">
+        <h3>Update Order</h3>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <form th:action="@{/admin/orders/status/{id}(id=${order.id})}" method="post">
+                <label>Order Status:</label>
+                <select name="status" class="form-control" style="width:200px;display:inline">
+                    <option th:each="s : ${ {'PENDING','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED'} }"
+                            th:value="${s}" th:text="${s}"
+                            th:selected="${order.orderStatus.name() == s}">
+                    </option>
+                </select>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+
+            <form th:action="@{/admin/orders/payment/{id}(id=${order.id})}" method="post">
+                <label>Payment Status:</label>
+                <select name="paymentStatus" class="form-control" style="width:200px;display:inline">
+                    <option th:each="s : ${ {'PENDING','PAID','FAILED','REFUNDED'} }"
+                            th:value="${s}" th:text="${s}"
+                            th:selected="${order.paymentStatus.name() == s}">
+                    </option>
+                </select>
+                <button type="submit" class="btn btn-success">Update</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

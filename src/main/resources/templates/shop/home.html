@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WatchStore - Premium Watches India</title>
+    <link rel="stylesheet" th:href="@{/css/shop.css}">
+    <style>
+        /* ===== CHATBOT STYLES ===== */
+        .chatbot-fab {
+            position: fixed; bottom: 30px; right: 30px; z-index: 1000;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #1a1a2e, #e94560);
+            color: white; font-size: 28px; border: none; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(233,69,96,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .chatbot-fab:hover { transform: scale(1.1); box-shadow: 0 6px 25px rgba(233,69,96,0.6); }
+        .chatbot-window {
+            position: fixed; bottom: 100px; right: 30px; z-index: 999;
+            width: 350px; max-height: 500px; border-radius: 16px;
+            background: #fff; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+            display: none; flex-direction: column; overflow: hidden;
+        }
+        .chatbot-window.open { display: flex; }
+        .chat-header {
+            background: linear-gradient(135deg, #1a1a2e, #e94560);
+            color: white; padding: 14px 18px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .chat-header .avatar { font-size: 22px; }
+        .chat-header .title { font-weight: 700; font-size: 15px; }
+        .chat-header .subtitle { font-size: 11px; opacity: 0.8; }
+        .chat-header .close-btn {
+            margin-left: auto; background: none; border: none;
+            color: white; font-size: 20px; cursor: pointer; opacity: 0.8;
+        }
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px; max-height: 320px;
+        }
+        .msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+        .msg.bot { background: #f0f2ff; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg.user { background: linear-gradient(135deg, #1a1a2e, #e94560); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.typing { background: #f0f2ff; color: #888; font-style: italic; }
+        .chat-input-area {
+            padding: 12px; border-top: 1px solid #eee;
+            display: flex; gap: 8px;
+        }
+        .chat-input-area input {
+            flex: 1; padding: 8px 12px; border: 1.5px solid #e0e0e0;
+            border-radius: 20px; font-size: 13px; outline: none;
+        }
+        .chat-input-area input:focus { border-color: #e94560; }
+        .chat-input-area button {
+            background: #e94560; color: white; border: none;
+            border-radius: 50%; width: 36px; height: 36px; font-size: 16px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .chat-input-area button:hover { background: #c73652; }
+        .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+        .quick-btn {
+            font-size: 11px; padding: 4px 10px; border-radius: 12px;
+            background: #f0f2ff; border: 1px solid #d0d5f5; color: #5c67f5;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .quick-btn:hover { background: #e0e4ff; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="logo">⌚ WatchStore</a>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/cart" class="nav-link">
+                    🛒 Cart
+                    <span th:if="${cartCount > 0}" style="background:#e94560;color:white;border-radius:50%;padding:1px 6px;font-size:11px;margin-left:3px;" th:text="${cartCount}">0</span>
+                </a>
+                <span th:if="${loggedUser != null}">
+                    <a href="/my-orders" class="nav-link">My Orders</a>
+                    <span style="color:#888;font-size:14px;" th:text="'Hi, ' + ${userName}">Hi</span>
+                    <a href="/auth/logout" class="nav-link" style="color:#e94560;">Logout</a>
+                </span>
+                <span th:if="${loggedUser == null}">
+                    <a href="/auth/login" class="nav-link">Login</a>
+                </span>
+                <a th:if="${userRole == 'ADMIN'}" href="/admin/dashboard" class="nav-link btn-admin">Admin Panel</a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <h1>Premium Timepieces for Every Occasion</h1>
+        <p>Discover our exclusive collection of luxury, sport, and smart watches</p>
+        <a href="/shop" class="btn-hero">Shop Now →</a>
+    </div>
+</section>
+
+<!-- Products -->
+<section class="products-section">
+    <div class="container">
+        <h2 class="section-title">Featured Watches</h2>
+        <div class="products-grid">
+            <div class="product-card" th:each="product : ${products}">
+                <div class="product-image">
+                    <img th:src="${product.imageUrl != null ? product.imageUrl : 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=400'}"
+                         th:alt="${product.name}" style="width:100%;height:200px;object-fit:cover;">
+                    <span class="product-category" th:text="${product.category}">Luxury</span>
+                </div>
+                <div class="product-info">
+                    <h3 th:text="${product.name}">Watch Name</h3>
+                    <p class="brand" th:text="${product.brand}">Brand</p>
+                    <p class="price" th:text="'₹' + ${product.price}">₹0</p>
+                    <div style="display:flex;gap:6px;margin-top:8px;">
+                        <a th:href="@{/shop/product/{id}(id=${product.id})}" class="btn-add" style="flex:1;text-align:center;">View Details</a>
+                        <form th:if="${product.stock > 0}" action="/cart/add" method="post" style="flex:1;">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn-add" style="width:100%;background:linear-gradient(135deg,#1a1a2e,#e94560);color:white;border:none;cursor:pointer;">🛒 Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center;margin-top:20px;padding:40px;color:#666" th:if="${#lists.isEmpty(products)}">
+            <p>No products available yet. Add products from Admin Panel.</p>
+        </div>
+        <div style="text-align:center;margin-top:40px">
+            <a href="/shop" class="btn-hero">View All Watches →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>© 2025 WatchStore India. All rights reserved.</p>
+</footer>
+
+<!-- ===== AI CHATBOT ===== -->
+<button class="chatbot-fab" onclick="toggleChat()" title="Chat with WatchBot">⌚</button>
+
+<div class="chatbot-window" id="chatWindow">
+    <div class="chat-header">
+        <span class="avatar">🤖</span>
+        <div>
+            <div class="title">WatchBot</div>
+            <div class="subtitle">Your personal watch advisor</div>
+        </div>
+        <button class="close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="msg bot">👋 Hello! I'm WatchBot, your personal watch advisor!<br><br>Ask me about watches, prices, or help finding the perfect timepiece for your budget and style! ⌚</div>
+    </div>
+    <div class="quick-btns" id="quickBtns">
+        <button class="quick-btn" onclick="sendQuick('Show luxury watches')">💎 Luxury</button>
+        <button class="quick-btn" onclick="sendQuick('Best sport watches')">🏃 Sport</button>
+        <button class="quick-btn" onclick="sendQuick('Smart watches available')">📱 Smart</button>
+        <button class="quick-btn" onclick="sendQuick('Budget under 5000')">💰 Budget</button>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Ask about watches..." 
+               onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+function toggleChat() {
+    const w = document.getElementById('chatWindow');
+    w.classList.toggle('open');
+}
+
+function sendQuick(text) {
+    document.getElementById('chatInput').value = text;
+    sendMessage();
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const messages = document.getElementById('chatMessages');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Show user message
+    messages.innerHTML += `<div class="msg user">${escHtml(text)}</div>`;
+    input.value = '';
+    messages.innerHTML += `<div class="msg typing" id="typingIndicator">WatchBot is typing...</div>`;
+    messages.scrollTop = messages.scrollHeight;
+
+    // Hide quick buttons after first message
+    document.getElementById('quickBtns').style.display = 'none';
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        document.getElementById('typingIndicator')?.remove();
+        messages.innerHTML += `<div class="msg bot">${escHtml(data.reply)}</div>`;
+    } catch (e) {
+        document.getElementById('typingIndicator')?.remove();
+        messages.innerHTML += `<div class="msg bot">Sorry, I'm having trouble. Browse our <a href="/shop">shop</a> directly!</div>`;
+    }
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function escHtml(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+
+</body>
+</html>

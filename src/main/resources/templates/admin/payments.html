@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Payments - WatchStore Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand"><span>⌚</span> WatchStore Admin</div>
+    <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+        <a href="/admin/products" class="nav-link">⌚ Products</a>
+        <a href="/admin/orders" class="nav-link">📦 Orders</a>
+        <a href="/admin/payments" class="nav-link active">💳 Payments</a>
+        <a href="/admin/users" class="nav-link">👥 Users</a>
+        <a href="/admin/sellers" class="nav-link">🏪 Sellers</a>
+        <a href="/" class="nav-link">🏠 View Shop</a>
+        <a href="/auth/logout" class="nav-link logout">🚪 Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>Payment Monitor</h1>
+    </div>
+
+    <!-- Revenue Summary -->
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+                <h3 th:text="${#lists.size(paidOrders)}">0</h3>
+                <p>Paid Orders</p>
+            </div>
+        </div>
+        <div class="stat-card yellow">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+                <h3 th:text="${#lists.size(pendingOrders)}">0</h3>
+                <p>Pending Payments</p>
+            </div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon">❌</div>
+            <div class="stat-info">
+                <h3 th:text="${#lists.size(failedOrders)}">0</h3>
+                <p>Failed Payments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg,#1a1a2e,#16213e);color:white;text-align:center;padding:30px;margin-bottom:20px">
+        <h2>Total Revenue Collected</h2>
+        <h1 style="font-size:3rem;color:#4ade80">₹<span th:text="${#numbers.formatDecimal(totalRevenue,1,2)}">0</span></h1>
+    </div>
+
+    <!-- Paid Orders -->
+    <div class="card">
+        <h3 style="color:green">✅ Paid Orders</h3>
+        <table class="table">
+            <thead>
+                <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${paidOrders}">
+                    <td th:text="'#' + ${order.id}"></td>
+                    <td th:text="${order.customer != null ? order.customer.name : 'N/A'}"></td>
+                    <td th:text="'₹' + ${order.totalAmount}"></td>
+                    <td th:text="${order.paymentMethod}"></td>
+                    <td th:text="${#temporals.format(order.orderedAt, 'dd MMM yyyy')}"></td>
+                    <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-info">View</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(paidOrders)}">
+                    <td colspan="6" style="text-align:center">No paid orders yet</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pending Payments -->
+    <div class="card">
+        <h3 style="color:orange">⏳ Pending Payments</h3>
+        <table class="table">
+            <thead>
+                <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${pendingOrders}">
+                    <td th:text="'#' + ${order.id}"></td>
+                    <td th:text="${order.customer != null ? order.customer.name : 'N/A'}"></td>
+                    <td th:text="'₹' + ${order.totalAmount}"></td>
+                    <td th:text="${order.paymentMethod}"></td>
+                    <td th:text="${#temporals.format(order.orderedAt, 'dd MMM yyyy')}"></td>
+                    <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-sm btn-warning">Manage</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(pendingOrders)}">
+                    <td colspan="6" style="text-align:center">No pending payments</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

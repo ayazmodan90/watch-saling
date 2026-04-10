@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout - WatchStore</title>
+    <link rel="stylesheet" th:href="@{/css/shop.css}">
+    <style>
+        .checkout-section { padding: 40px 0; }
+        .checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 30px; }
+        .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 30px; }
+        .form-card h3 { font-size: 20px; font-weight: 800; color: #1a1a2e; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 14px; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid #e0e0e0;
+            border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #e94560; }
+        .payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .payment-option input[type=radio] { display: none; }
+        .payment-option label {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 16px 10px; border: 2px solid #e0e0e0; border-radius: 10px;
+            cursor: pointer; text-align: center; transition: all 0.2s; gap: 6px; }
+        .payment-option label .pay-icon { font-size: 28px; }
+        .payment-option label .pay-label { font-size: 13px; font-weight: 600; color: #333; }
+        .payment-option label .pay-desc { font-size: 11px; color: #888; }
+        .payment-option input[type=radio]:checked + label { border-color: #e94560; background: #fff0f3; }
+        .payment-option label:hover { border-color: #e94560; }
+        .order-summary { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 24px; position: sticky; top: 20px; }
+        .order-summary h3 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 16px; }
+        .order-item { display: flex; gap: 12px; margin-bottom: 14px; align-items: center; }
+        .order-item img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; }
+        .order-item-info { flex: 1; }
+        .order-item-info .item-name { font-size: 13px; font-weight: 600; color: #333; }
+        .order-item-info .item-qty { font-size: 12px; color: #888; }
+        .order-item-price { font-size: 13px; font-weight: 700; color: #e94560; }
+        .summary-divider { border: none; border-top: 1px solid #f0f0f0; margin: 14px 0; }
+        .summary-total-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 800; color: #1a1a2e; margin-top: 6px; }
+        .btn-place-order { width: 100%; background: linear-gradient(135deg, #1a1a2e, #e94560); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 18px; }
+        .btn-place-order:hover { opacity: 0.9; }
+        @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="logo">⌚ WatchStore</a>
+            <nav class="nav">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/cart" class="nav-link">🛒 Cart</a>
+                <span th:if="${session.loggedUser != null}">
+                    <a href="/my-orders" class="nav-link">My Orders</a>
+                    <span style="color:#888;font-size:14px;" th:text="'Hi, ' + ${session.userName}">Hi</span>
+                    <a href="/auth/logout" class="nav-link" style="color:#e94560;">Logout</a>
+                </span>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<section class="checkout-section">
+    <div class="container">
+        <h2 style="font-size:26px;font-weight:800;color:#1a1a2e;margin-bottom:24px;">✅ Checkout</h2>
+        <form action="/checkout/place-order" method="post">
+            <div class="checkout-grid">
+                <div>
+                    <!-- Shipping Info -->
+                    <div class="form-card" style="margin-bottom:20px;">
+                        <h3>📦 Shipping Details</h3>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" th:value="${user.name}" readonly style="background:#f9f9f9;">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" th:value="${user.email}" readonly style="background:#f9f9f9;">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" th:value="${user.phone}" readonly style="background:#f9f9f9;">
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Address *</label>
+                            <textarea name="shippingAddress" rows="3" required
+                                placeholder="House No., Street, City, State, PIN Code..."
+                                th:text="${user.address}"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="form-card">
+                        <h3>💳 Payment Method</h3>
+                        <div class="payment-options">
+                            <div class="payment-option">
+                                <input type="radio" name="paymentMethod" id="cash" value="CASH" checked>
+                                <label for="cash">
+                                    <span class="pay-icon">💵</span>
+                                    <span class="pay-label">Cash on Delivery</span>
+                                    <span class="pay-desc">Pay when delivered</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" name="paymentMethod" id="upi" value="UPI">
+                                <label for="upi">
+                                    <span class="pay-icon">📱</span>
+                                    <span class="pay-label">UPI</span>
+                                    <span class="pay-desc">GPay, PhonePe, Paytm</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" name="paymentMethod" id="card" value="CARD">
+                                <label for="card">
+                                    <span class="pay-icon">💳</span>
+                                    <span class="pay-label">Credit / Debit Card</span>
+                                    <span class="pay-desc">Visa, Mastercard, RuPay</span>
+                                </label>
+                            </div>
+                            <div class="payment-option">
+                                <input type="radio" name="paymentMethod" id="netbanking" value="NETBANKING">
+                                <label for="netbanking">
+                                    <span class="pay-icon">🏦</span>
+                                    <span class="pay-label">Net Banking</span>
+                                    <span class="pay-desc">SBI, HDFC, ICICI...</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div>
+                    <div class="order-summary">
+                        <h3>🧾 Order Summary</h3>
+                        <div th:each="item : ${cart}" class="order-item">
+                            <img th:src="${item.imageUrl}" th:alt="${item.name}">
+                            <div class="order-item-info">
+                                <div class="item-name" th:text="${item.name}">Watch</div>
+                                <div class="item-qty" th:text="'Qty: ' + ${item.quantity}">Qty: 1</div>
+                            </div>
+                            <div class="order-item-price" th:text="'₹' + ${item.subtotal}">₹0</div>
+                        </div>
+                        <hr class="summary-divider">
+                        <div class="summary-total-row">
+                            <span>Total</span>
+                            <span th:text="'₹' + ${total}">₹0</span>
+                        </div>
+                        <button type="submit" class="btn-place-order">✅ Place Order</button>
+                        <a href="/cart" style="display:block;text-align:center;margin-top:10px;color:#888;font-size:13px;text-decoration:none;">← Back to Cart</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<footer class="footer"><p>© 2025 WatchStore India. All rights reserved.</p></footer>
+</body>
+</html>
